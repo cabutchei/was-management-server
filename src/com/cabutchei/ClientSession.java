@@ -5,8 +5,12 @@ package com.cabutchei;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import com.cabutchei.agent.Agent;
+import com.cabutchei.protocol.Protocol;
 
 
 /**
@@ -45,24 +49,40 @@ public class ClientSession {
 
                 String opcode = extract(line, "opcode");
                 String id = extract(line, "id");
-                String middle;
-                switch (Opcodes.getByCode(opcode)) {    // TODO: add more opcodes and use the message factory
+                String middle = null;
+                String response = null;
+                Map<String, Object> payload;
+                switch (Opcodes.getByCode(opcode)) {
                     case Opcodes.HANDSHAKE_REQUEST:
-                        middle = "\"success\":true,\"payload\":{\"selected\":1}";
+                        payload = Map.of(
+                            "selected", 1
+                        );
+                        response = Protocol.createResponse(true, opcode, id, payload);
                         break;
                     case Opcodes.SERVER_STATUS:
-                        middle = "\"success\":true,\"payload\":{\"state\":\"STOPPED\"}";
+                        payload = Map.of(
+                            "state", "STOPPED"
+                        );
+                        response = Protocol.createResponse(true, opcode, id, payload);
+                        break;
+                    case Opcodes.SERVER_INFO:
+                        response = Agent.getServerInfo(line);
+                        break;
+                    case Opcodes.SERVER_ADD:
+                        response = Agent.addServer(line);
                         break;
                     default:
                         middle = "\"success\":false,\"error\":{\"code\":\"UNKNOWN_OPCODE\",\"message\":\"Unsupported opcode: " + opcode + "\"}";
                         break;
                 }
-
-                String response = jsonResponse(opcode, id, middle);
+                if (middle != null) {
+                    response = jsonResponse(opcode, id, middle);
+                }
                 System.out.println("[agent] TX: " + response);
                 out.write(response);
                 out.flush();
             }
+           
             System.out.println("[agent] Client closed (EOF).");
         } catch (Exception e) {
             System.err.println("[agent] Exception in client request handling: " + e.getMessage());
@@ -72,7 +92,7 @@ public class ClientSession {
     }
 
     private void sendNotifications() {
-        
+       
         try (BufferedWriter out = new BufferedWriter(
                     new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8))) {
             while (true) {
