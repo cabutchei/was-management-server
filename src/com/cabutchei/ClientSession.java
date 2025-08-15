@@ -20,10 +20,12 @@ import com.cabutchei.protocol.Protocol;
 public class ClientSession {
     private Socket client;
     private BlockingQueue<String> outbox;
+    private Agent agent;
 
-    public ClientSession(Socket client) {
+    public ClientSession(Socket client, Agent agent) {
         this.client = client;
         this.outbox = new LinkedBlockingQueue<>();
+        this.agent = agent;
     }
 
     public void start() {
@@ -66,10 +68,10 @@ public class ClientSession {
                         response = Protocol.createResponse(true, opcode, id, payload);
                         break;
                     case Opcodes.SERVER_INFO:
-                        response = Agent.getServerInfo(line);
+                        response = agent.getServerInfo(line);
                         break;
                     case Opcodes.SERVER_ADD:
-                        response = Agent.addServer(line);
+                        response = agent.addServer(line);
                         break;
                     default:
                         middle = "\"success\":false,\"error\":{\"code\":\"UNKNOWN_OPCODE\",\"message\":\"Unsupported opcode: " + opcode + "\"}";

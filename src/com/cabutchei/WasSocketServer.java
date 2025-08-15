@@ -5,8 +5,16 @@ package com.cabutchei;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import com.cabutchei.agent.Agent;
+import com.cabutchei.commands.Commands;
+import com.cabutchei.servers.ServerStore;
+
 public class WasSocketServer {
     public static void main(String[] args) throws Exception {
+
+        var serverStore = new ServerStore();
+        var commandService = new Commands(serverStore);
+        var agent = new Agent(commandService);
 
         WasFacade wasFacade = new WasFacade("localhost", "8880", "MyCell", "MyNode", "MyServer");
         
@@ -17,7 +25,7 @@ public class WasSocketServer {
             Socket client = serverSocket.accept();
             System.out.println("[agent] Client connected: " + client.getRemoteSocketAddress());
             
-            ClientSession session = new ClientSession(client);
+            ClientSession session = new ClientSession(client, agent);
             session.start();
 
 

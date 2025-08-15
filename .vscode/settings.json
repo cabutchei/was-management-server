@@ -1,0 +1,13 @@
+{
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-17",
+            "path": "/Users/qintess/.sdkman/candidates/java/17.0.12-oracle/"
+        },
+        {
+            "name": "JavaSE-21",
+            "path": "/Users/qintess/.sdkman/candidates/java/21.0.6-oracle/",
+            "default": true
+        },
+    ]
+}
