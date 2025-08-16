@@ -5,10 +5,14 @@ package com.cabutchei.agent;
 import java.util.Map;
 
 import com.cabutchei.Opcodes;
+import com.cabutchei.ServerProcess;
 import com.cabutchei.commands.*;
 import com.cabutchei.protocol.AddServerRequest;
 import com.cabutchei.protocol.GetServerInfoRequest;
 import com.cabutchei.protocol.GetServerInfoResponse;
+import com.cabutchei.protocol.StartServerResponse;
+import com.cabutchei.protocol.StopServerRequest;
+import com.cabutchei.protocol.StopServerResponse;
 import com.cabutchei.protocol.AddServerResponse;
 
 
@@ -16,9 +20,11 @@ import com.cabutchei.protocol.AddServerResponse;
 public class Agent {
 
     Commands commandService;
+    ServerProcess serverProcess;
 
-    public Agent(Commands commandService) {
+    public Agent(Commands commandService, ServerProcess serverProcess) {
         this.commandService = commandService;
+        this.serverProcess = serverProcess;
     }
 
     public String startServer(String line) {
@@ -27,12 +33,29 @@ public class Agent {
             throw new IllegalArgumentException("Invalid opcode: " + req.opcode);
         }
         String serverId = req.payload.id();
-        String pid = commandService.startServer(serverId);
-        // var resp = new StartServerResponse(req.id, req.opcode.getCode(), Integer.parseInt(req.version), System.currentTimeMillis(), true, pid);
-        // return resp.toJson();
-        return "";
+        serverProcess.startServer(serverId);
+        // String pid = commandService.startServer(serverId);
+        var payload = new StartServerResponse.Payload(serverId);
+        var resp = new StartServerResponse(req.id, req.opcode.getCode(), Integer.parseInt(req.version), System.currentTimeMillis(), true, payload);
+        return resp.toJson();
+        // return "";
     }
-    
+
+
+    public String stopServer(String line) {
+        var req = StopServerRequest.fromJson(line);
+        if (req.opcode != Opcodes.SERVER_STOP) {
+            throw new IllegalArgumentException("Invalid opcode: " + req.opcode);
+        }
+        String serverId = req.payload.serverId();
+        serverProcess.stopServer(serverId);
+        // commandService.stopServer(serverId);
+        var payload = new StopServerResponse.Payload(serverId);
+        var resp = new StopServerResponse(req.id, req.opcode, Integer.parseInt(req.version), System.currentTimeMillis(), true, payload);
+        return resp.toJson();
+    }
+
+
     public String addServer(String line) {
         var req = AddServerRequest.fromJson(line);
         if (req.opcode != Opcodes.SERVER_ADD) {
