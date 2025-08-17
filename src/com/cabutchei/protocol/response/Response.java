@@ -1,4 +1,4 @@
-package com.cabutchei.protocol;
+package com.cabutchei.protocol.response;
 
 
 
