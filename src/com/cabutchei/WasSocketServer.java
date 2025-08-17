@@ -12,9 +12,9 @@ import com.cabutchei.servers.ServerStore;
 public class WasSocketServer {
     public static void main(String[] args) throws Exception {
 
-        var serverStore = new ServerStore();
-        var commandService = new Commands(serverStore);
         var serverProcess = new ServerProcess();
+        var serverStore = new ServerStore();
+        var commandService = new Commands(serverStore, serverProcess);
         var agent = new Agent(commandService, serverProcess);
 
         WasFacade wasFacade = new WasFacade("localhost", "8880", "MyCell", "MyNode", "MyServer");

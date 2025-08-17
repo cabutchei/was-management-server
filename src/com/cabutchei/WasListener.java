@@ -16,12 +16,12 @@ public class WasListener implements NotificationListener {
     @Override
     public void handleNotification(Notification notification, Object handback) {
         String notificationMessage = String.format(
-                "{\"type\":\"notification\",\"opcode\":\"%s\",\"version\":1,\"timestamp\":%d,\"content\":{\"message\":\"%s\"}}",
+                "{\"type\":\"event\",\"opcode\":\"%s\",\"version\":1,\"timestamp\":%d,\"content\":{\"message\":\"%s\"}}",
                 notification.getType(), System.currentTimeMillis(), notification.getMessage());
         System.out.println("Received notification: " + notification.getType());
         System.out.println("Message: " + notification.getMessage());
         try {
-            clientSession.pushMessage(notificationMessage);
+            clientSession.pushMessage(notificationMessage + "\n");
         } catch (InterruptedException e) {
             System.err.println("Failed to push notification: " + e.getMessage());
         }

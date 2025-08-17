@@ -2,8 +2,7 @@ package com.cabutchei.agent;
 
 
 
-import java.util.Map;
-
+import com.cabutchei.ClientSession;
 import com.cabutchei.Opcodes;
 import com.cabutchei.ServerProcess;
 import com.cabutchei.commands.*;
@@ -11,6 +10,7 @@ import com.cabutchei.protocol.AddServerRequest;
 import com.cabutchei.protocol.GetServerInfoRequest;
 import com.cabutchei.protocol.GetServerInfoResponse;
 import com.cabutchei.protocol.StartServerResponse;
+import com.cabutchei.protocol.StartServerRequest;
 import com.cabutchei.protocol.StopServerRequest;
 import com.cabutchei.protocol.StopServerResponse;
 import com.cabutchei.protocol.AddServerResponse;
@@ -27,18 +27,18 @@ public class Agent {
         this.serverProcess = serverProcess;
     }
 
-    public String startServer(String line) {
-        var req = AddServerRequest.fromJson(line);
-        if (req.opcode != Opcodes.SERVER_ADD) {
+    public String startServer(String line, ClientSession session) {
+        var req = StartServerRequest.fromJson(line);
+        if (req.opcode != Opcodes.SERVER_START) {
             throw new IllegalArgumentException("Invalid opcode: " + req.opcode);
         }
-        String serverId = req.payload.id();
+        String serverId = req.payload.serverId();
         serverProcess.startServer(serverId);
-        // String pid = commandService.startServer(serverId);
+        // serverProcess.startServer(serverId);
+        commandService.startServer(serverId, session);
         var payload = new StartServerResponse.Payload(serverId);
         var resp = new StartServerResponse(req.id, req.opcode.getCode(), Integer.parseInt(req.version), System.currentTimeMillis(), true, payload);
         return resp.toJson();
-        // return "";
     }
 
 

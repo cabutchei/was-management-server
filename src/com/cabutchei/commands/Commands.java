@@ -2,36 +2,41 @@ package com.cabutchei.commands;
 
 
 import java.util.List;
-import java.util.Map;
 
-import com.cabutchei.protocol.Protocol;
-import com.cabutchei.protocol.Response;
 import com.cabutchei.servers.Server;
 import com.cabutchei.servers.ServerStore;
-import com.ibm.websphere.product.WASProductInfo;
-import com.cabutchei.Opcodes;
+import com.cabutchei.ClientSession;
+import com.cabutchei.ServerProcess;
 import com.cabutchei.WasConfig;
+import com.cabutchei.WasListener;
 
 
 
 public class Commands {
 
     ServerStore serverStore;
+    ServerProcess serverProcess;
 
-    public Commands(ServerStore serverStore){
+    public Commands(ServerStore serverStore, ServerProcess serverProcess){
         this.serverStore = serverStore;
+        this.serverProcess = serverProcess;
     }
     
-    public String startServer(String serverId) {
-        // Implementation for starting a server
-        String pid = "12345"; // Placeholder for actual process ID
-        System.out.println("Server " + serverId + " started.");
-        return pid;
+    public void startServer(String serverId, ClientSession session) {
+        serverProcess.startServer(serverId);
+        var listener = new WasListener(session);
+        try {
+            var wasFacade = serverStore.getFacade(serverId);
+            wasFacade.connect(10000, 2000);
+            wasFacade.subscribeToNotifications(listener);
+        } catch (Exception e) {}
     }
     
     public String addServer(String serverId, String installDir) {
         var server = new Server(serverId, "name", installDir);
+        try {
         serverStore.addServer(server);
+        } catch (Exception e) {}
         System.out.println("Server " + serverId + " added with path: " + installDir);
         return serverId;
     }

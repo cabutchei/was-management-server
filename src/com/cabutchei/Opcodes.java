@@ -13,6 +13,7 @@ public enum Opcodes {
     @SerializedName("Application.Status") APPLICATION_STATUS("Application.Status"),
     @SerializedName("Application.Start") APPLICATION_START("Application.Start"),
     @SerializedName("Application.Stop") APPLICATION_STOP("Application.Stop"),
+    @SerializedName("Subscribe") SUBSCRIBE("Subscribe"),
     UNKNOWN("Unknown");
 
     private final String code;

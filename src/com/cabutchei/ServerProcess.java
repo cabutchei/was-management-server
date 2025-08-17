@@ -19,8 +19,8 @@ public class ServerProcess {
 
     public void startServer(String serverId) {
         // String command = "C:/Desenvolvimento/IBM/WebSphere/AppServer_8_5/bin/startServer.bat";
-        Path scriptPath = Paths.get(".").getParent().getParent().getParent()
-            .resolve("script").resolve("startServer.bat").toAbsolutePath();
+        Path scriptPath = Paths.get("").toAbsolutePath()
+            .resolve("script").resolve("startServer.bat").toAbsolutePath(); // TODO: generate server specific scripts
         // ProcessBuilder processBuilder = new ProcessBuilder(command, "-profileName", "AppSrv03", "-script", scriptPath.toString(), "server1");
         // try {
         //     processBuilder.start();
@@ -29,21 +29,14 @@ public class ServerProcess {
         //     System.err.println("Failed to start server " + serverId + ": " + e.getMessage());
         // }
         ProcessBuilder serverProcessBuilder = new ProcessBuilder(scriptPath.toString());
-        try{
+        serverProcessBuilder.inheritIO();   // TODO: verify if inheritIO is needed
+        try {
             serverProcessBuilder.start();
             processes.put(serverId, serverProcessBuilder.start());
-            System.out.println("Server " + serverId + " started.");
+            System.out.println("Server " + serverId + " is starting");
         } catch (Exception e) {
             System.err.println("Failed to start server " + serverId + ": " + e.getMessage());
         }
-        // ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", serverName + ".jar");
-        // try {
-        //     Process process = processBuilder.start();
-        //     processes.put(serverName, process);
-        //     System.out.println("Server " + serverName + " started.");
-        // } catch (Exception e) {
-        //     System.err.println("Failed to start server " + serverName + ": " + e.getMessage());
-        // }
     }
 
     public void stopServer(String serverId) {
@@ -51,7 +44,16 @@ public class ServerProcess {
         ProcessBuilder processBuilder = new ProcessBuilder(command, "server1", "-profileName", "AppSrv03");
         try {
             processBuilder.start();
-            System.out.println("Server " + serverId + " stopped.");
+            System.out.println("Server " + serverId + " is stopping.");
+            Thread.sleep(10000);
+            Process serverProcess = this.processes.get(serverId);
+            if (serverProcess.isAlive()) {
+                serverProcess.destroy();
+                System.out.println("process alive? " + serverProcess.isAlive());
+                if (!serverProcess.isAlive()) {
+                    this.processes.remove(serverId);
+                }
+            }
         } catch (Exception e) {
             System.err.println("Failed to stop server " + serverId + ": " + e.getMessage());
         }

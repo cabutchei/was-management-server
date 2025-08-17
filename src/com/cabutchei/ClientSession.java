@@ -74,10 +74,10 @@ public class ClientSession {
                         response = agent.addServer(line);
                         break;
                     case Opcodes.SERVER_START:
-                        response = agent.startServer(line);
+                        response = agent.startServer(line, this);
                         break;
                     case Opcodes.SERVER_STOP:
-                    response = agent.stopServer(line);
+                        response = agent.stopServer(line);
                         break;
                     default:
                         middle = "\"success\":false,\"error\":{\"code\":\"UNKNOWN_OPCODE\",\"message\":\"Unsupported opcode: " + opcode + "\"}";

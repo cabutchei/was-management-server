@@ -10,6 +10,8 @@ import java.util.Set;
 import com.ibm.websphere.management.AdminClient;
 import com.ibm.websphere.management.AdminClientFactory;
 import com.ibm.websphere.management.exception.ConnectorException;
+import com.ibm.ws.webservices.xml.waswebservices.server;
+
 import javax.management.MalformedObjectNameException;
 
 public class WasFacade {
@@ -17,24 +19,33 @@ public class WasFacade {
     private String cellName;
     private String nodeName;
     private String serverName;
+    private String host;
+    private int port;
+    private Boolean connected = false;
 
     public WasFacade(String host, String port, String cellName, String nodeName, String serverName) throws Exception {
         this.cellName = cellName;
         this.nodeName = nodeName;
         this.serverName = serverName;
-        Properties connectProps = new Properties();
-        connectProps.setProperty(AdminClient.CONNECTOR_TYPE, "SOAP");
-        connectProps.setProperty(AdminClient.CONNECTOR_HOST, host);
-        connectProps.setProperty(AdminClient.CONNECTOR_PORT, port);
-
-        connect(connectProps, 30000, 1000);
 
     }
-    private void connect(Properties connectProps, long timeoutMs, long retryIntervalMs) throws Exception {
+
+    public WasFacade(String host, int port, String cellName, String nodeName, String serverName) throws Exception {
+        this.cellName = cellName;
+        this.nodeName = nodeName;
+        this.serverName = serverName;
+        this.host = host;
+        this.port = port;
+    }
+    public void connect(long timeoutMs, long retryIntervalMs) throws Exception {
         long startTime = System.currentTimeMillis();
+        Properties connectProps = new Properties();
+        connectProps.setProperty(AdminClient.CONNECTOR_TYPE, "SOAP");
+        connectProps.setProperty(AdminClient.CONNECTOR_HOST, this.host);
+        connectProps.setProperty(AdminClient.CONNECTOR_PORT, Integer.toString(port));
         while (true) {
             try {
-                adminClient = AdminClientFactory.createAdminClient(connectProps);
+                this.adminClient = AdminClientFactory.createAdminClient(connectProps);
                 if (adminClient == null) {
                     throw new ConnectorException("AdminClient creation returned null");
                 }
@@ -49,6 +60,10 @@ public class WasFacade {
                 Thread.sleep(retryIntervalMs);
             }
         }
+    }
+
+    public Boolean isConnected() {
+        return this.connected;
     }
 
 
@@ -67,17 +82,17 @@ public class WasFacade {
             }
             ObjectName serverObject = result.iterator().next();
 
-            // Query for the application MBean
-            query = queries.get("application");
-            result = adminClient.queryNames(new ObjectName(query), null);
-            if (result.isEmpty()) {
-                System.out.println("No application MBeans found for query: " + query);
-                return;
-            }
-            ObjectName appObject = result.iterator().next();
+            // // Query for the application MBean
+            // query = queries.get("application");
+            // result = adminClient.queryNames(new ObjectName(query), null);
+            // if (result.isEmpty()) {
+            //     System.out.println("No application MBeans found for query: " + query);
+            //     return;
+            // }
+            // ObjectName appObject = result.iterator().next();
 
             adminClient.addNotificationListener(serverObject, listener, null, null);
-            adminClient.addNotificationListener(appObject, listener, null, null);
+            // adminClient.addNotificationListener(appObject, listener, null, null);
         } catch (MalformedObjectNameException e) {
             System.out.println("Malformed object name: " + e.getMessage());
         } catch (ConnectorException e) {
