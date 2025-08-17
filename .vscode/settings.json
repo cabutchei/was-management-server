@@ -1,12 +1,15 @@
 {
+    "java.autobuild.enabled": true,
+    "java.project.outputPath": "./bin",
+    "java.project.sourcePaths": ["src"],
     "java.configuration.runtimes": [
         {
             "name": "JavaSE-17",
-            "path": "/Users/qintess/.sdkman/candidates/java/17.0.12-oracle/"
+            "path": ""
         },
         {
             "name": "JavaSE-21",
-            "path": "/Users/qintess/.sdkman/candidates/java/21.0.6-oracle/",
+            "path": "",
             "default": true
         },
     ]
