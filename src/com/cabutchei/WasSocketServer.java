@@ -21,6 +21,8 @@ public class WasSocketServer {
         
         ServerSocket serverSocket = new ServerSocket(9999);
         System.out.println("Java server listening on port 9999...");
+        ServerSocket logSocket = new ServerSocket(9989);
+        System.out.println("Java server listening on port 9989...");
 
         try{
             while (true) {
@@ -29,7 +31,9 @@ public class WasSocketServer {
                 
                 ClientSession session = new ClientSession(client, agent);
                 session.start();
-    
+
+                LogChannel logChannel = new LogChannel(client, agent);
+                logChannel.start();
     
                 WasListener listener = new WasListener(session);
                 wasFacade.subscribeToNotifications(listener);

@@ -7,13 +7,13 @@ import java.util.Map;
 import com.cabutchei.Opcodes;
 import com.cabutchei.ServerProcess;
 import com.cabutchei.commands.*;
-import com.cabutchei.protocol.AddServerRequest;
-import com.cabutchei.protocol.GetServerInfoRequest;
-import com.cabutchei.protocol.GetServerInfoResponse;
-import com.cabutchei.protocol.StartServerResponse;
-import com.cabutchei.protocol.StopServerRequest;
-import com.cabutchei.protocol.StopServerResponse;
-import com.cabutchei.protocol.AddServerResponse;
+import com.cabutchei.protocol.request.AddServerRequest;
+import com.cabutchei.protocol.request.GetServerInfoRequest;
+import com.cabutchei.protocol.request.StopServerRequest;
+import com.cabutchei.protocol.response.AddServerResponse;
+import com.cabutchei.protocol.response.GetServerInfoResponse;
+import com.cabutchei.protocol.response.StartServerResponse;
+import com.cabutchei.protocol.response.StopServerResponse;
 
 
 

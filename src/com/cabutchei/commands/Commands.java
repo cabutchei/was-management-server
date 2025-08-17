@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.cabutchei.protocol.Protocol;
-import com.cabutchei.protocol.Response;
+import com.cabutchei.protocol.response.Response;
 import com.cabutchei.servers.Server;
 import com.cabutchei.servers.ServerStore;
 import com.ibm.websphere.product.WASProductInfo;
