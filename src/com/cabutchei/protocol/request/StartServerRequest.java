@@ -1,4 +1,4 @@
-package com.cabutchei.protocol;
+package com.cabutchei.protocol.request;
 
 import com.cabutchei.Opcodes;
 import com.google.gson.Gson;

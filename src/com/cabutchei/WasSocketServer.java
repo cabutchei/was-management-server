@@ -6,33 +6,38 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import com.cabutchei.agent.Agent;
-import com.cabutchei.commands.Commands;
+import com.cabutchei.commands.CommandService;
+import com.cabutchei.notification.EventBus;
+import com.cabutchei.notification.AsyncEventBus;
+import com.cabutchei.notification.ClientNotificationService;
+import com.cabutchei.process.ServerProcessManager;
 import com.cabutchei.servers.ServerStore;
 
 public class WasSocketServer {
     public static void main(String[] args) throws Exception {
 
-        var serverProcess = new ServerProcess();
-        var serverStore = new ServerStore();
-        var commandService = new Commands(serverStore, serverProcess);
-        var agent = new Agent(commandService, serverProcess);
-
-        WasFacade wasFacade = new WasFacade("localhost", "8880", "MyCell", "MyNode", "MyServer");
-        
         ServerSocket serverSocket = new ServerSocket(9999);
         System.out.println("Java server listening on port 9999...");
 
-        try{
+        var serverStore = new ServerStore();
+        var wasFacadeService = new WasFacadeService(serverStore, true, 30, 500);
+        var serverProcessManager = new ServerProcessManager();
+        
+        
+        try {
             while (true) {
                 Socket client = serverSocket.accept();
                 System.out.println("[agent] Client connected: " + client.getRemoteSocketAddress());
                 
+                EventBus bus = AsyncEventBus.singleThreaded();
+                var serverRuntimeManager = new ServerRuntimeManager(bus, wasFacadeService, serverProcessManager);
+                var commandService = new CommandService(serverStore, wasFacadeService, serverRuntimeManager);
+                var agent = new Agent(commandService);
+                
                 ClientSession session = new ClientSession(client, agent);
+                new ClientNotificationService(session, bus);
                 session.start();
     
-    
-                WasListener listener = new WasListener(session);
-                wasFacade.subscribeToNotifications(listener);
             }
         } catch (Exception e) {
             System.err.println("Error in server: " + e.getMessage());

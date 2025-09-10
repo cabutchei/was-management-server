@@ -1,4 +1,4 @@
-package com.cabutchei.protocol;
+package com.cabutchei.protocol.response;
 
 import java.util.List;
 
@@ -28,8 +28,8 @@ public class GetServerInfoResponse extends Response {
         return gson.fromJson(json, GetServerInfoResponse.class);
     }
 
-    public void setPayload(String id, String name, String version, List<String> servers, List<String> profiles) {
-        this.payload = new Payload(id, name, version, servers, profiles);
+    public void setPayload(String id, String name, List<String> servers, List<String> profiles, String serverType) {
+        this.payload = new Payload(id, name, servers, profiles, serverType);
     }
 
     public String toJson() {
@@ -40,9 +40,9 @@ public class GetServerInfoResponse extends Response {
     public static record Payload(
         String id,
         String name,
-        String version,
         List<String> servers,
-        List<String> profiles
+        List<String> profiles,
+        String serverType
     ) {}
     
 }

@@ -55,6 +55,9 @@ public class ClientSession {
                 String response = null;
                 Map<String, Object> payload;
                 switch (Opcodes.getByCode(opcode)) {
+                    case Opcodes.ECHO:
+                        response = jsonResponse(opcode, id, "\"success\":true");
+                        break;
                     case Opcodes.HANDSHAKE_REQUEST:
                         payload = Map.of(
                             "selected", 1
@@ -95,7 +98,7 @@ public class ClientSession {
         } catch (Exception e) {
             System.err.println("[agent] Exception in client request handling: " + e.getMessage());
         } finally {
-            close();
+            // close();
         }
     }
 

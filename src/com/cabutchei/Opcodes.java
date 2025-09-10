@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 public enum Opcodes {
 
+    @SerializedName("Echo") ECHO("Echo"),
     @SerializedName("Handshake.Request") HANDSHAKE_REQUEST("Handshake.Request"),
     @SerializedName("Server.Info") SERVER_INFO("Server.Info"),
     @SerializedName("Server.Add") SERVER_ADD("Server.Add"),

@@ -4,27 +4,25 @@ package com.cabutchei.agent;
 
 import com.cabutchei.ClientSession;
 import com.cabutchei.Opcodes;
-import com.cabutchei.ServerProcess;
-import com.cabutchei.commands.*;
-import com.cabutchei.protocol.AddServerRequest;
-import com.cabutchei.protocol.GetServerInfoRequest;
-import com.cabutchei.protocol.GetServerInfoResponse;
-import com.cabutchei.protocol.StartServerResponse;
-import com.cabutchei.protocol.StartServerRequest;
-import com.cabutchei.protocol.StopServerRequest;
-import com.cabutchei.protocol.StopServerResponse;
-import com.cabutchei.protocol.AddServerResponse;
+import com.cabutchei.commands.CommandService;
+import com.cabutchei.commands.CommandService.ServerInfo;
+import com.cabutchei.protocol.request.AddServerRequest;
+import com.cabutchei.protocol.request.GetServerInfoRequest;
+import com.cabutchei.protocol.request.StartServerRequest;
+import com.cabutchei.protocol.request.StopServerRequest;
+import com.cabutchei.protocol.response.AddServerResponse;
+import com.cabutchei.protocol.response.GetServerInfoResponse;
+import com.cabutchei.protocol.response.StartServerResponse;
+import com.cabutchei.protocol.response.StopServerResponse;
 
 
 
 public class Agent {
 
-    Commands commandService;
-    ServerProcess serverProcess;
+    CommandService commandService;
 
-    public Agent(Commands commandService, ServerProcess serverProcess) {
+    public Agent(CommandService commandService) {
         this.commandService = commandService;
-        this.serverProcess = serverProcess;
     }
 
     public String startServer(String line, ClientSession session) {
@@ -33,11 +31,16 @@ public class Agent {
             throw new IllegalArgumentException("Invalid opcode: " + req.opcode);
         }
         String serverId = req.payload.serverId();
-        serverProcess.startServer(serverId);
-        // serverProcess.startServer(serverId);
-        commandService.startServer(serverId, session);
-        var payload = new StartServerResponse.Payload(serverId);
-        var resp = new StartServerResponse(req.id, req.opcode.getCode(), Integer.parseInt(req.version), System.currentTimeMillis(), true, payload);
+        StartServerResponse.Payload payload;
+        StartServerResponse resp;
+        try {
+            commandService.startServer(serverId);
+            payload = new StartServerResponse.Payload(serverId);
+            resp = new StartServerResponse(req.id, req.opcode.getCode(), Integer.parseInt(req.version), System.currentTimeMillis(), true, payload);
+        } catch(Exception e) {
+            resp = new StartServerResponse(req.id, req.opcode.getCode(), Integer.parseInt(req.version), System.currentTimeMillis(), false, null);
+            resp.setError(0, e.getMessage());
+        }
         return resp.toJson();
     }
 
@@ -47,11 +50,20 @@ public class Agent {
         if (req.opcode != Opcodes.SERVER_STOP) {
             throw new IllegalArgumentException("Invalid opcode: " + req.opcode);
         }
+        if (req.opcode != Opcodes.SERVER_STOP) {
+            throw new IllegalArgumentException("Invalid opcode: " + req.opcode);
+        }
         String serverId = req.payload.serverId();
-        serverProcess.stopServer(serverId);
-        // commandService.stopServer(serverId);
-        var payload = new StopServerResponse.Payload(serverId);
-        var resp = new StopServerResponse(req.id, req.opcode, Integer.parseInt(req.version), System.currentTimeMillis(), true, payload);
+        StopServerResponse.Payload payload;
+        StopServerResponse resp;
+        try {
+            commandService.stopServer(serverId);
+            payload = new StopServerResponse.Payload(serverId);
+            resp = new StopServerResponse(req.id, req.opcode.getCode(), Integer.parseInt(req.version), System.currentTimeMillis(), true, payload);
+        } catch(Exception e) {
+            resp = new StopServerResponse(req.id, req.opcode.getCode(), Integer.parseInt(req.version), System.currentTimeMillis(), false, null);
+            resp.setError(0, e.getMessage());
+        }
         return resp.toJson();
     }
 
@@ -73,13 +85,21 @@ public class Agent {
         if (req.opcode != Opcodes.SERVER_INFO) {
             throw new IllegalArgumentException("Invalid opcode: " + req.opcode);
         }
-        var serverInfo = commandService.getServerInfo(req.payload.path());
-        var resp = new GetServerInfoResponse(req.id, req.opcode, 0, 0, null, null);
+        ServerInfo serverInfo;
+        try {
+            serverInfo = commandService.getServerInfo(req.payload.path());
+        } catch(Exception e) {
+            var respError = new GetServerInfoResponse(req.id, req.opcode, 0, 0, null, null);
+            respError.setError(0, e.getMessage());
+            return respError.toJson();
+        }
+
+        GetServerInfoResponse resp = new GetServerInfoResponse(req.id, req.opcode, 0, 0, null, null);
         resp.setPayload(serverInfo.productId(),
                         serverInfo.name(),
-                        serverInfo.version(),
                         serverInfo.servers(),
-                        serverInfo.profiles());
+                        serverInfo.profiles(),
+                        serverInfo.serverType());
 
         return resp.toJson();
     }
